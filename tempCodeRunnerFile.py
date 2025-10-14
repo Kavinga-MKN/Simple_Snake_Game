@@ -1,0 +1,1 @@
+pygame.draw.rect(screen, DARK_GREEN, food_rect)
