@@ -4,9 +4,10 @@ from pygame.math import Vector2
 pygame.init()
 
 title_font = pygame.font.Font(None, 60)
+score_font = pygame.font.Font(None, 40)
 
-GREEN = (173, 204, 96)
-DARK_GREEN = (43, 51, 24)
+ELECTRIC_BLUE = (0, 200, 255)
+MIDNIGHT_BLACK = (25, 25, 30)
 
 cell_size = 25
 number_of_cells = 20
@@ -37,11 +38,13 @@ class Snake:
         self.body = [Vector2(6, 9), Vector2(5, 9), Vector2(4, 9)]
         self.direction = Vector2(1, 0)
         self.add_segment = False
+        self.eat_sound = pygame.mixer.Sound("Sounds/eat.mp3")
+        self.wall_hit_sound = pygame.mixer.Sound("Sounds/wall.mp3")
 
     def draw(self):
         for segment in self.body:
             segment_rect = (OFFSET + segment.x * cell_size, OFFSET + segment.y * cell_size, cell_size, cell_size)
-            pygame.draw.rect(screen, DARK_GREEN, segment_rect, 0, 7)
+            pygame.draw.rect(screen, MIDNIGHT_BLACK, segment_rect, 0, 7)
 
     def update(self):
         self.body.insert(0, self.body[0] + self.direction)
@@ -76,6 +79,8 @@ class Game:
         if self.snake.body[0] == self.food.position:
             self.food.position = self.food.generate_random_pos(self.snake.body)
             self.snake.add_segment = True
+            self.score += 1
+            self.snake.eat_sound.play()
 
     def check_collision_with_edges(self):
         if self.snake.body[0].x == number_of_cells or self.snake.body[0].x == -1:
@@ -87,6 +92,8 @@ class Game:
         self.snake.reset()
         self.food.position = self.food.generate_random_pos(self.snake.body)
         self.state = "STOPPED"
+        self.score = 0
+        self.snake.wall_hit_sound.play()
 
     def check_collision_with_tail(self):
         headless_body = self.snake.body[1:]
@@ -126,12 +133,14 @@ while True:
                 game.snake.direction = Vector2(1, 0)
 
     #Drawing
-    screen.fill(GREEN)
-    pygame.draw.rect(screen, DARK_GREEN,
+    screen.fill(ELECTRIC_BLUE)
+    pygame.draw.rect(screen, MIDNIGHT_BLACK,
         (OFFSET-5, OFFSET-5, cell_size * number_of_cells+10, cell_size * number_of_cells+10), 5)
     game.draw()
-    title_surface = title_font.render("Retro Snake", True, DARK_GREEN)
+    title_surface = title_font.render("Retro Snake", True, MIDNIGHT_BLACK)
+    score_surface = score_font.render(str(game.score), True, MIDNIGHT_BLACK)
     screen.blit(title_surface, (OFFSET-5, 20))
+    screen.blit(score_surface, (OFFSET-5, OFFSET + cell_size*number_of_cells +10))
 
     pygame.display.update()
     clock.tick(60)
